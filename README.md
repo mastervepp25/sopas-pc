@@ -106,9 +106,3 @@ We welcome contributors! Fork, clone, and open pull requests.
 License
 
 GPL-3.0
-
----
-
-Let me know if you'd like a stylized logo or banner to include in `./media/sopas_pc_logo.png`.
-
-
