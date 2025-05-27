@@ -1,108 +1,284 @@
-Here’s a customized README.md file for your Sopas PC project based on the AgenticSeek structure and your GitHub repo:
+Sopas PC  |  Private, Local AI Agent
+
+<p align="center">
+  <img src="https://aiteksoftware.site/sopas-pc/logo.png" width="280" alt="Sopas PC Logo" />
+</p>> Sopas PC is a 100 % local, privacy‑first AI assistant that can browse, code, plan, and talk – entirely on your own machine. No cloud, no telemetry, full data sovereignty.
+
+
 
 
 ---
 
-# Sopas PC: Private, Local AI Agent
+📚 Table of Contents
 
-<p align="center">
-<img align="center" src="./media/sopas_pc_logo.png" width="300" height="300" alt="Sopas PC Logo">
-</p>
+1. Features
 
-**Sopas PC** is a 100% local, privacy-focused AI assistant that can browse, code, and perform complex tasks entirely on your machine. Designed for local LLMs, it guarantees zero cloud dependency.
 
-## Features
+2. Architecture Overview
 
-- **Private & Local** – Runs on your hardware with no data sent to the cloud.
-- **Web Browsing** – Can search, read, extract, and interact with websites.
-- **Autonomous Coding** – Supports multiple programming languages.
-- **Task Planning** – Breaks down complex goals into executable steps.
-- **Voice Interface** – Voice-to-text and text-to-speech capabilities.
 
-## Installation
+3. Requirements
 
-### 1. Clone the Repository
 
-```bash
+4. Installation
+
+Automatic Setup
+
+Manual Setup
+
+
+
+5. Running Sopas PC
+
+
+6. Configuration
+
+
+7. Voice Interface (Optional)
+
+
+8. Directory Structure
+
+
+9. Roadmap
+
+
+10. Contributing
+
+
+11. Community & Support
+
+
+12. License
+
+
+
+
+---
+
+✨ Features
+
+100 % Local Processing – All LLM inference and vector storage stay on‑device.
+
+Autonomous Web Browser – Parse pages, follow links, fill forms, and scrape data using headless Chromium.
+
+Multi‑Language Code Generation – Python, JS/TS, Bash, Rust, Go, and more.
+
+Goal‑Directed Planning – Hierarchical task decomposition with memory and retry logic.
+
+Voice I/O – Whisper‑style STT + TTS via Piper or ElevenLabs.
+
+Extensible Tools API – Plug‑in new skills (e.g., Home Assistant control, file search, or proprietary APIs).
+
+Cross‑Platform – Tested on Ubuntu 22/24, macOS 13+, and Windows 11.
+
+
+
+---
+
+🏗️ Architecture Overview
+
+flowchart TD
+    subgraph User Machine
+        UI["CLI / Web UI / Voice"]
+        UI -->|REST / CLI| Core(Core Orchestrator)
+        Core --> LLM[[Local LLM (Ollama / llama.cpp)]]
+        Core --> Tools((Tools Registry))
+        Tools --> Browser(Headless Browser)
+        Tools --> FS[Filesystem IO]
+        Tools --> Voice[STT / TTS]
+    end
+
+Core = a thin task runner that routes prompts to the local LLM, invokes tools, manages state, and streams the response back to whichever interface you launched.
+
+
+---
+
+🛠️ Requirements
+
+Component	Minimum Version	Notes
+
+Python	3.10	3.12 supported
+Node.js	18 LTS	needed for the Web UI build
+Git	any	
+nix utils	bash, curl, gzip	
+GPU (optional)	NVIDIA RTX 2060 +	for fp16 or quantised models
+Ollama	0.1.30+	or other local LLM server like llama.cpp
+Chrome/Chromium	latest	+ matching ChromeDriver
+
+
+> Windows users: install [WSL 2] and enable GPU compute for best performance.
+
+
+
+
+---
+
+📦 Installation
+
+Automatic Setup
+
+1. Clone the repo & enter it
+
 git clone https://github.com/mastervepp25/sopas-pc.git
 cd sopas-pc
 
-2. Rename Environment File
+
+2. Copy the env template
 
 cp .env.example .env
 
-3. Setup Python Environment
 
-python3.10 -m venv sopas_env
-source sopas_env/bin/activate
-# For Windows: sopas_env\Scripts\activate
+3. Run the one‑liner installer (Linux / macOS)
 
-4. Automatic Installation (Recommended)
+chmod +x install.sh && ./install.sh
 
-Linux/MacOS:
-
-chmod +x install.sh
-./install.sh
-
-Windows:
+On Windows (PowerShell):
 
 ./install.bat
 
-5. Manual Installation (Optional)
 
-Install required packages manually:
 
-pip install -r requirements.txt
+Manual Setup
 
-Ensure you install ChromeDriver and other OS-specific dependencies (see original AgenticSeek docs for full setup).
+python3.10 -m venv sopas_env
+source sopas_env/bin/activate          # Windows: sopas_env\\Scripts\\activate
+pip install -r requirements.txt        # core Python deps
+# -- Install Ollama ----------------------------------------------------------
+curl https://ollama.ai/install.sh | sh   # or brew install ollama
+# ---------------------------------------------------------------------------
+# -- Install ChromeDriver ----------------------------------------------------
+# ensure the version matches your installed Chrome/Chromium
+sudo apt install chromium-driver        # Ubuntu example
+
+See docs/INSTALL.md for distribution‑specific details (Fedora, Arch, etc.).
 
 
 ---
 
-Run Sopas PC
-
-Start services:
+🏃‍♂️ Running Sopas PC
 
 source sopas_env/bin/activate
-sudo ./start_services.sh  # Mac/Linux
-start ./start_services.cmd  # Windows
+# start background agents (vector DB, browser pool, etc.)
+sudo ./start_services.sh        # Linux / macOS
+start ./start_services.cmd      # Windows
 
-Launch in CLI mode:
+# CLI mode
+python cli.py                   # interactive shell
 
-python cli.py
+# Web mode
+python api.py                   # REST + WebSocket server
+# browse http://localhost:3000/
 
-Launch in Web mode:
+Quick Demo
 
-python api.py
-
-Then visit http://localhost:3000/.
+> ask "Write a Bash script that finds the five largest files in /var and prints their sizes."
 
 
 ---
 
-Configuration
+⚙️ Configuration
 
-Edit the config.ini to customize:
+All runtime settings live in config.ini — edit and restart.
 
 [MAIN]
-is_local = True
-provider_name = ollama
-provider_model = deepseek-r1:14b
-provider_server_address = 127.0.0.1:11434
-agent_name = Sopas
-work_dir = /home/user/sopas_workspace
+agent_name           = Sopas
+work_dir             = /home/$USER/sopas_workspace
+
+[LLM]
+provider_name        = ollama
+model               = deepseek-r1:14b
+server_address       = 127.0.0.1:11434
+ctx_window           = 8192
+
+[VOICE]
+enable_voice         = false       ; true to activate speech layer
+stt_backend          = whispercpp
 ...
 
-
----
-
-Contribution
-
-We welcome contributors! Fork, clone, and open pull requests.
+Environment variables in .env override the INI when present.
 
 
 ---
 
-License
+🎙️ Voice Interface (Optional)
 
-GPL-3.0
+1. Install Piper (sudo apt install piper-tts) or sign‑up for ElevenLabs.
+
+
+2. Flip enable_voice=true in config.ini.
+
+
+3. Launch with python voice_cli.py.
+
+
+
+
+---
+
+📁 Directory Structure
+
+├── api.py            # FastAPI server (Web UI & REST)
+├── cli.py            # REPL shell
+├── core/             # agent orchestrator & planning engine
+├── tools/            # built‑in tool plugins
+├── voice/            # STT / TTS helpers
+├── installs/         # platform‑specific installers
+├── docs/             # extended documentation
+└── start_services.*  # service supervisor scripts
+
+
+---
+
+🔭 Roadmap
+
+[ ] Multi‑agent collaboration (Sopas PC "teams")
+
+[ ] GUI prompt designer (Electron‑based)
+
+[ ] Auto‑update mechanism for local models
+
+[ ] Mobile companion app (Flutter)
+
+
+
+---
+
+🤝 Contributing
+
+1. Fork → Branch → PR (please write clear commit messages).
+
+
+2. Run pre‑commit run --all-files before pushing.
+
+
+3. New tool integrations should ship with unit tests in tests/.
+
+
+
+
+---
+
+💬 Community & Support
+
+Discussions: https://github.com/mastervepp25/sopas-pc/discussions
+
+Issues: please search first, then open a detailed ticket.
+
+Email: sopas‑support@aiteksoftware.site
+
+
+
+---
+
+📄 License
+
+Sopas PC is released under the GNU GPL v3. You are free to use, modify, and redistribute under the same terms.
+
+
+---
+
+> Built with  ❤️ by Aitek PH by Emil Alvaro Serrano Danguilan
+
+
+
